@@ -23,3 +23,11 @@ class User_model(BaseModel):
     email: str
     address: str
     mobile_number: str = None
+
+class User_model2(BaseModel):
+    id : int
+    name: str
+    dob: date
+    email: str
+    address: str
+    mobile_number: str = None

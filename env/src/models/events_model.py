@@ -21,3 +21,10 @@ class Event_model(BaseModel):
     name: str
     date: date
     location: str
+
+class Event_model2(BaseModel):
+    id: int
+    user_id: int
+    name: str
+    date: date
+    location: str

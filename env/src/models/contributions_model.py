@@ -22,3 +22,11 @@ class Contribution_model(BaseModel):
     address: str
     amount: int
     mobile_number: str
+
+class Contribution_model2(BaseModel):
+    id : int
+    event_id: int
+    name: str
+    address: str
+    amount: int
+    mobile_number: str
