@@ -34,18 +34,18 @@ def read_one(id: int):
     query = "SELECT id, event_id, name, address, amount, mobile_number FROM contributions WHERE id = %s"
     cursor.execute(query, (id,))
     contribution = cursor.fetchone()
-    print(contribution)
+    # print(contribution)
     cursor.close()
     if contribution is None:
         raise HTTPException(status_code=404, detail="Contribution not found")
 
     return {"id": contribution[0], "event_id": contribution[1], "name": contribution[2], "address": contribution[3], "amount": contribution[4], "mobile_number": contribution[5]}
 
-@router.get("/", response_model= list[Contribution_model2])
-def read_all():
+@router.get("/read_all/{id}", response_model= list[Contribution_model2])
+def read_all(id: int):
     cursor = conn.cursor()
-    query = "SELECT * FROM contributions"
-    cursor.execute(query)
+    query = "SELECT * FROM contributions where event_id = %s"
+    cursor.execute(query, (id,))
     contributions = cursor.fetchall()
     contributions_data  = []
     for contribution in contributions:
@@ -92,10 +92,10 @@ def contributions_report(event_id: int):
 
 
 @router.get("/orderby/{orderby}")
-def contributions_orderby(orderby: str):
+def contributions_orderby(event_id: int, orderby: str):
     cursor = conn.cursor()
-    query = "SELECT * FROM contributions ORDER BY %s;"
-    cursor.execute(query, (orderby,))
+    query = "SELECT * FROM contributions WHERE event_id = %s ORDER BY %s;"
+    cursor.execute(query, (event_id,orderby,))
     contributions = cursor.fetchall()
     orderby_data = []
     for contribution in contributions:
@@ -123,7 +123,7 @@ def contributions_orderby(orderby: str):
 
 
 @router.put("/{id}", response_model=Contribution_model)
-def update_contributions(id: int, contribution: Contribution_model):
+def update_contributions(id: str, contribution: Contribution_model):
     cursor = conn.cursor()
     query = 'SELECT * FROM contributions WHERE id = %s';
     cursor.execute(query, (id,))
@@ -132,7 +132,6 @@ def update_contributions(id: int, contribution: Contribution_model):
         query = "UPDATE contributions set event_id = %s, name = %s, address = %s, amount = %s, mobile_number = %s WHERE id = %s"
         cursor.execute(query, (contribution.event_id, contribution.name, contribution.address, contribution.amount, contribution.mobile_number, id))
         conn.commit()
-        contribution.id = id
         cursor.close()
         return contribution
     else:
@@ -141,10 +140,10 @@ def update_contributions(id: int, contribution: Contribution_model):
 
 
 @router.delete("/{id}")
-def delete_contribution(id: int):
+def delete_contribution(contribution_id: int):
     cursor = conn.cursor()
     query = 'SELECT * FROM contributions WHERE id = %s';
-    cursor.execute(query, (id,))
+    cursor.execute(query, (contribution_id,))
     check_id = cursor.fetchone()
     if check_id != None:
         query = "DELETE FROM contributions WHERE id = %s"
@@ -154,8 +153,6 @@ def delete_contribution(id: int):
         return {"id": id}
     else:
         raise HTTPException(status_code=404, detail="contribution not found")
-
-
 
 
 

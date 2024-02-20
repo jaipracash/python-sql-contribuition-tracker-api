@@ -11,13 +11,19 @@ router = APIRouter(
 
 @router.post("/event_registration", response_model=Event_model)
 def create(event: Event_model):
-    cursor = conn.cursor()
-    query = "INSERT INTO events(user_id, name, date, location) VALUES(%s, %s, %s, %s)"
-    cursor.execute(query, (event.user_id, event.name, event.date, event.location))
-    conn.commit()
-    cursor.close()
+    try:
+        cursor = conn.cursor()
+        query = "INSERT INTO events(user_id, name, date, location) VALUES(%s, %s, %s, %s)"
+        cursor.execute(query, (event.user_id, event.name, event.date, event.location))
+        conn.commit()
+        cursor.close()
 
-    return event
+        return event
+    except Exception as e:
+        # Rollback transaction in case of error
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
 
 
 @router.get("/{id}", response_model=Event_model2)
@@ -34,26 +40,34 @@ def read_one(id: int):
     return {"id": event[0], "user_id": event[1], "name": event[2], "date": event[3], "location": event[4]}
 
 
-@router.get("/", response_model=list[Event_model2])
-def read_all():
+@router.get("/read_all/{id}", response_model=list[Event_model2])
+def read_all(id: int):
     cursor = conn.cursor()
-    query = "SELECT * FROM events"
-    cursor.execute(query)
-    events = cursor.fetchall()
-    print(events)
-    events_data = []
-    for event in events:
-        event_dict = {
-            'id': event[0],
-            'user_id': event[1],
-            'name': event[2],
-            'date': event[3],
-            'location': event[4]
-        }
-        events_data.append(event_dict)
-    cursor.close()
+    query = 'SELECT * FROM users WHERE id = %s';
+    cursor.execute(query, (id,))
+    check_id = cursor.fetchone()
+    if check_id != None:
+        cursor = conn.cursor()
+        query = "SELECT * FROM events where user_id = %s"
+        cursor.execute(query, (id,))
+        events = cursor.fetchall()
+        print(events)
+        events_data = []
+        for event in events:
+            event_dict = {
+                'id': event[0],
+                'user_id': event[1],
+                'name': event[2],
+                'date': event[3],
+                'location': event[4]
+            }
+            events_data.append(event_dict)
+        cursor.close()
+    
+        return events_data
+    else:
+        raise HTTPException(status_code=404, detail="user not found")
 
-    return events_data
 
 @router.put("/{id}", response_model=Event_model)
 def update_events(id: int, event: Event_model):

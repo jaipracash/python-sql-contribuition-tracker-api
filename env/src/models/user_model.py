@@ -31,3 +31,7 @@ class User_model2(BaseModel):
     email: str
     address: str
     mobile_number: str = None
+    
+class UserResponse(BaseModel):
+    user_id: int
+    user: User_model
