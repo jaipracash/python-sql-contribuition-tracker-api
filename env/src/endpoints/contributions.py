@@ -42,10 +42,10 @@ def read_one(id: int):
     return {"id": contribution[0], "event_id": contribution[1], "name": contribution[2], "address": contribution[3], "amount": contribution[4], "mobile_number": contribution[5]}
 
 @router.get("/read_all/{id}", response_model= list[Contribution_model2])
-def read_all(id: int):
+def read_all(event_id: int):
     cursor = conn.cursor()
     query = "SELECT * FROM contributions where event_id = %s"
-    cursor.execute(query, (id,))
+    cursor.execute(query, (event_id,))
     contributions = cursor.fetchall()
     contributions_data  = []
     for contribution in contributions:

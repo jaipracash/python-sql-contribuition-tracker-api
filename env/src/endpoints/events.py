@@ -20,17 +20,16 @@ def create(event: Event_model):
 
         return event
     except Exception as e:
-        # Rollback transaction in case of error
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 
 
 @router.get("/{id}", response_model=Event_model2)
-def read_one(id: int):
+def read_one(event_id: int):
     cursor = conn.cursor()
     query = "SELECT id, user_id, name, date, location FROM events WHERE id = %s"
-    cursor.execute(query, (id,))
+    cursor.execute(query, (event_id,))
     event = cursor.fetchone()
     print(event)
     cursor.close()
@@ -41,15 +40,15 @@ def read_one(id: int):
 
 
 @router.get("/read_all/{id}", response_model=list[Event_model2])
-def read_all(id: int):
+def read_all(user_id: int):
     cursor = conn.cursor()
     query = 'SELECT * FROM users WHERE id = %s';
-    cursor.execute(query, (id,))
+    cursor.execute(query, (user_id,))
     check_id = cursor.fetchone()
     if check_id != None:
         cursor = conn.cursor()
         query = "SELECT * FROM events where user_id = %s"
-        cursor.execute(query, (id,))
+        cursor.execute(query, (user_id,))
         events = cursor.fetchall()
         print(events)
         events_data = []
@@ -70,17 +69,17 @@ def read_all(id: int):
 
 
 @router.put("/{id}", response_model=Event_model)
-def update_events(id: int, event: Event_model):
+def update_events(event_id: int, event: Event_model):
     cursor = conn.cursor()
     query = 'SELECT * FROM events WHERE id = %s';
-    cursor.execute(query, (id,))
+    cursor.execute(query, (event_id,))
     check_id = cursor.fetchone()
     if check_id != None:
         query = "UPDATE events SET id = id, user_id = %s, name = %s, date = %s, location = %s WHERE id = %s"
-        cursor.execute(query, (event.user_id, event.name, event.date, event.location, id))
+        cursor.execute(query, (event.user_id, event.name, event.date, event.location, event_id))
         conn.commit()
         cursor.close()
-        event.id = id
+        event.id = event_id
         return event
     else:
         raise HTTPException(status_code=404, detail="Event not found")
@@ -104,20 +103,20 @@ def event_report(user_id: int):
 
 
 @router.delete("/{id}")
-def delete_event(id: int):
+def delete_event(event_id: int):
     cursor = conn.cursor()
-    event_id = id
+    event_id = event_id
     query2 = 'SELECT * FROM events WHERE id = %s';
-    cursor.execute(query2, (id,))
+    cursor.execute(query2, (event_id,))
     check_id = cursor.fetchone()
     if check_id != None:
         query1 = 'DELETE FROM contributions WHERE event_id = %s';
         cursor.execute(query1, (event_id,))
         query = "DELETE FROM events WHERE id = %s"
-        cursor.execute(query, (id,))
+        cursor.execute(query, (event_id,))
         conn.commit()
         cursor.close()
-        return {"id": id}
+        return {"Event id": event_id}
     else:
         raise HTTPException(status_code=404, detail="Event not found")
 

@@ -32,12 +32,12 @@ def create(user: User_model):
 
 
 @router.get("/{id}", response_model=User_model2)
-def read_one(id: str):
-    id = id.strip()
+def read_one(user_id: str):
+    id = user_id.strip()
     id = int(id)
     cursor = conn.cursor()
     query = "SELECT id, name, dob, email, address, mobile_number FROM users WHERE id = %s"
-    cursor.execute(query, (id,))
+    cursor.execute(query, (user_id,))
     user = cursor.fetchone()
     cursor.close()
     print(user)
@@ -76,35 +76,35 @@ def read_all():
     return user_data
 
 @router.put("/{id}", response_model= User_model)
-def update_users(id: int, user: User_model):
+def update_users(user_id: int, user: User_model):
     cursor = conn.cursor()
     query = 'SELECT * FROM users WHERE id = %s';
-    cursor.execute(query, (id,))
+    cursor.execute(query, (user_id,))
     check_id = cursor.fetchone()
     if check_id != None:
         query = "update users set  name = %s, dob = %s, email = %s, address = %s, mobile_number = %s where id = %s"
-        cursor.execute(query, (user.name, user.dob, user.email, user.address, user.mobile_number, id))
+        cursor.execute(query, (user.name, user.dob, user.email, user.address, user.mobile_number, user_id))
         conn.commit()
         cursor.close()
-        user.id = id
+        user.id = user_id
         return user
     else:
         raise HTTPException(status_code=404, detail="User not found")
 
 
 @router.delete("/{id}")
-def delete_item(id : int):
+def delete_item(user_id : int):
     cursor = conn.cursor()
     query = 'SELECT * FROM users WHERE id = %s';
-    cursor.execute(query, (id,))
+    cursor.execute(query, (user_id,))
     check_id = cursor.fetchone()
     if check_id != None:
         query = "DELETE FROM users WHERE id = %s"
-        cursor.execute(query, (id,))
+        cursor.execute(query, (user_id,))
         conn.commit()
         cursor.close()
     
-        return {"id" : id}
+        return {"id" : user_id}
     else:
         raise HTTPException(status_code=404, detail="User not found")
 
