@@ -6,9 +6,9 @@ from datetime import date
 
 db_config = {
     'host': 'localhost',
-    'user': 'jai',
-    'passwd': 'admin123',
-    'db': 'common_contributions_tracker',
+    'user': 'root',
+    'passwd': 'root',
+    'db': 'contribution_tracker',
 }
 
 conn = MySQLdb.connect(**db_config)
